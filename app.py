@@ -5,14 +5,18 @@ import urllib.parse
 from datetime import datetime
 import gspread
 from google.oauth2.service_account import Credentials
+import os
 
 # --- GOOGLE SHEETS CONFIG ---
 SCOPES = ["https://www.googleapis.com/auth/spreadsheets"]
 SPREADSHEET_ID = "1P8YJsjXVU3rqUH4zJx2vM0qtT43PsDfXuZ5nOhbW_sc"
 SHEET_NAME = "Sheet1"
 
+# Ruta absoluta a tu archivo credenciales.json
+cred_path = r"C:\Users\Perettib\Desktop\ruleta\credenciales.json"
+
 credentials = Credentials.from_service_account_file(
-    "credenciales.json", scopes=SCOPES
+    cred_path, scopes=SCOPES
 )
 client = gspread.authorize(credentials)
 sheet = client.open_by_key(SPREADSHEET_ID).worksheet(SHEET_NAME)
