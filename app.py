@@ -3,11 +3,12 @@ import streamlit.components.v1 as components
 import urllib.parse
 import requests
 
-# 👉 URL pública de tu Google Apps Script Web App
-WEB_APP_URL = "https://script.google.com/macros/s/AKfycbw-sipoBGsOe92y9uuMyFtTkF4JOw9ikqS71d6Np9YKNsmx3cvFfEk3pZbnN2tFRY6W/exec"
+# Nueva URL pública de Google Apps Script Web App
+WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzky9Nqrs7V2ly8_SnccOD5Ytw9W5DC0byQpR_iNfGMwYNYpaRQv_Pk8ALvKvcSeAO8/exec"
 
 st.set_page_config(page_title="Ruleta Mágica Millex", layout="wide")
 
+# Estilos
 st.markdown("""
 <style>
     header, footer {visibility: hidden;}
@@ -22,14 +23,14 @@ st.markdown("""
         text-shadow: 1px 1px 4px rgba(255,255,255,0.5);
         border-bottom: 1px solid #333;
     }
-    ::-webkit-scrollbar {
-        display: none;
-    }
+    ::-webkit-scrollbar { display: none; }
 </style>
 """, unsafe_allow_html=True)
 
+# Título
 st.markdown('<div class="title-container">RULETA MÁGICA MILLEX</div>', unsafe_allow_html=True)
 
+# Ruleta
 components.html("""
 <html>
   <head>
@@ -60,6 +61,7 @@ components.html("""
 </html>
 """, height=620, scrolling=False)
 
+# Formulario
 with st.expander("🎁 Cargar datos del ganador", expanded=False):
     with st.form("formulario"):
         nombre = st.text_input("Nombre y apellido")
@@ -77,25 +79,19 @@ with st.expander("🎁 Cargar datos del ganador", expanded=False):
                     "premio": premio
                 }
                 try:
-                    respuesta = requests.post(WEB_APP_URL, json=datos)
-                    if respuesta.status_code == 200:
-                        try:
-                            respuesta_json = respuesta.json()
-                            if respuesta_json.get("status") == "ok":
-                                mensaje = f"¡Felicitaciones {nombre}! 🎉 Obtuviste el premio: *{premio}*. Presentá este mensaje para canjearlo."
-                                link = f"https://wa.me/{whatsapp.strip()}?text={urllib.parse.quote(mensaje)}"
-                                st.success("✅ Datos guardados correctamente. Abriendo WhatsApp...")
-                                components.html(f"<script>window.open('{link}', '_blank')</script>", height=0)
-                            else:
-                                error_msg = respuesta_json.get("message", "Error desconocido")
-                                st.error(f"❌ Error al guardar los datos en Google Sheets: {error_msg}")
-                        except Exception:
-                            st.error("❌ La respuesta del Web App no es JSON válido.")
+                    # Enviar datos al Apps Script como parámetros
+                    respuesta = requests.get(WEB_APP_URL, params=datos)
+                    if respuesta.status_code == 200 and "ok" in respuesta.text.lower():
+                        mensaje = f"¡Felicitaciones {nombre}! 🎉 Obtuviste el premio: *{premio}*. Presentá este mensaje para canjearlo."
+                        link = f"https://wa.me/{whatsapp.strip()}?text={urllib.parse.quote(mensaje)}"
+                        st.success("✅ Datos guardados correctamente. Abriendo WhatsApp...")
+                        components.html(f"<script>window.open('{link}', '_blank')</script>", height=0)
                     else:
-                        st.error(f"❌ Error HTTP: {respuesta.status_code}")
+                        st.error("❌ Error al guardar los datos en Google Sheets.")
                 except Exception as e:
                     st.error(f"❌ Error de conexión: {e}")
             else:
                 st.warning("⚠️ Por favor completá todos los campos.")
+
 
 
