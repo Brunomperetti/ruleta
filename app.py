@@ -3,13 +3,11 @@ import streamlit.components.v1 as components
 import urllib.parse
 import requests
 
-# --- GOOGLE APPS SCRIPT WEB APP URL ---
-WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzn6YqW07Yw9mVNdvrsqAhBwliYsy_Jd-r3hEvcoEtXdo-4sbCaXR19XQVq_KMe3P_t/exec"
+# URL pública de tu Google Apps Script Web App
+WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwl6K4VtNWU9VCe-6Uhc5NEyUjysXl-FhM5JBJ8gJnjqZRjXjw25-U0l97cS4e65Hdx/exec"
 
-# --- INTERFAZ ---
 st.set_page_config(page_title="Ruleta Mágica Millex", layout="wide")
 
-# CSS personalizado
 st.markdown("""
 <style>
     header, footer {visibility: hidden;}
@@ -30,10 +28,8 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# Título
 st.markdown('<div class="title-container">RULETA MÁGICA MILLEX</div>', unsafe_allow_html=True)
 
-# Ruleta centrada, grande y sin marco ni scroll
 components.html("""
 <html>
   <head>
@@ -64,7 +60,6 @@ components.html("""
 </html>
 """, height=620, scrolling=False)
 
-# Panel desplegable para cargar datos
 with st.expander("🎁 Cargar datos del ganador", expanded=False):
     with st.form("formulario"):
         nombre = st.text_input("Nombre y apellido")
@@ -75,23 +70,16 @@ with st.expander("🎁 Cargar datos del ganador", expanded=False):
 
         if enviar:
             if nombre and razon and whatsapp and premio:
-                # Armar datos para enviar al Web App
                 datos = {
                     "nombre": nombre,
                     "razonSocial": razon,
                     "whatsapp": whatsapp,
                     "premio": premio
                 }
-
                 try:
-                    # Enviar datos al Web App
                     respuesta = requests.post(WEB_APP_URL, json=datos)
-
-                    # Debug: mostrar respuesta del Web App
                     st.write("Respuesta del Web App:", respuesta.text)
-
                     if respuesta.status_code == 200 and "ok" in respuesta.text:
-                        # Enviar por WhatsApp
                         mensaje = f"¡Felicitaciones {nombre}! 🎉 Obtuviste el premio: *{premio}*. Presentá este mensaje para canjearlo."
                         link = f"https://wa.me/{whatsapp.strip()}?text={urllib.parse.quote(mensaje)}"
                         st.success("✅ Datos guardados correctamente. Abriendo WhatsApp...")
@@ -102,7 +90,6 @@ with st.expander("🎁 Cargar datos del ganador", expanded=False):
                     st.error(f"❌ Error de conexión: {e}")
             else:
                 st.warning("⚠️ Por favor completá todos los campos.")
-
 
 
 
