@@ -78,16 +78,20 @@ with st.expander("🎁 Cargar datos del ganador", expanded=False):
                 }
                 try:
                     respuesta = requests.post(WEB_APP_URL, json=datos)
-                    respuesta_json = respuesta.json()
-
-                    if respuesta.status_code == 200 and respuesta_json.get("status") == "ok":
-                        mensaje = f"¡Felicitaciones {nombre}! 🎉 Obtuviste el premio: *{premio}*. Presentá este mensaje para canjearlo."
-                        link = f"https://wa.me/{whatsapp.strip()}?text={urllib.parse.quote(mensaje)}"
-                        st.success("✅ Datos guardados correctamente. Abriendo WhatsApp...")
-                        components.html(f"<script>window.open('{link}', '_blank')</script>", height=0)
+                    if respuesta.status_code == 200:
+                        try:
+                            respuesta_json = respuesta.json()
+                            if respuesta_json.get("status") == "ok":
+                                mensaje = f"¡Felicitaciones {nombre}! 🎉 Obtuviste el premio: *{premio}*. Presentá este mensaje para canjearlo."
+                                link = f"https://wa.me/{whatsapp.strip()}?text={urllib.parse.quote(mensaje)}"
+                                st.success("✅ Datos guardados correctamente. Abriendo WhatsApp...")
+                                components.html(f"<script>window.open('{link}', '_blank')</script>", height=0)
+                            else:
+                                st.error(f"❌ Error: {respuesta_json.get('message')}")
+                        except ValueError:
+                            st.error("❌ Respuesta inválida del Web App (no es JSON).")
                     else:
-                        error_msg = respuesta_json.get("message", "Error desconocido")
-                        st.error(f"❌ Error al guardar los datos en Google Sheets: {error_msg}")
+                        st.error(f"❌ Error HTTP: {respuesta.status_code}")
                 except Exception as e:
                     st.error(f"❌ Error de conexión: {e}")
             else:
