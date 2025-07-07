@@ -4,7 +4,7 @@ import urllib.parse
 import requests
 
 # URL de tu Apps Script
-WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwZMoIC7MNqmUpjj2uRID1Jhk_Y82W5vl5e6fnnRJkgiPt1FpBNcpafRx3I3LU205kLHQ/exec"
+WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyoSYcwlAQPGDnH4LCksSFzP60IZODnmylQ63wjxuA0afc23pXvPoV1HY5MhNTH1tqsug/exec"
 
 # Configuración de la página
 st.set_page_config(page_title="Ruleta Mágica Millex", layout="wide")
