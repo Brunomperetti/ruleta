@@ -3,8 +3,8 @@ import streamlit.components.v1 as components
 import urllib.parse
 import requests
 
-# Reemplaza con tu URL actualizada después de volver a desplegar
-WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxfRIC0a9q0sFW9XOdayCRio2oR8ggy9NfgZcBfRaXF0UPuUiduibbvKweFOcx6xvcJ/exec"
+# Reemplaza con tu nueva URL de despliegue
+WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxs79v18DYnXhJL-_GhWACY46ME2x98SWa6_WqJ0qPbq5jcRyWcOEpusBwWsLqEylDk/exec"
 
 # Configuración de la página
 st.set_page_config(page_title="Ruleta Mágica Millex", layout="wide")
@@ -26,6 +26,17 @@ st.markdown("""
     }
     ::-webkit-scrollbar {
         display: none;
+    }
+    .stButton>button {
+        background-color: #4CAF50;
+        color: white;
+        font-weight: bold;
+        border-radius: 8px;
+        padding: 10px 24px;
+    }
+    .stTextInput>div>div>input {
+        border-radius: 8px;
+        padding: 10px;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -51,7 +62,7 @@ components.html("""
         border-radius: 12px;
         width: 600px;
         height: 600px;
-        box-shadow: none;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.2);
         overflow: hidden;
         display: block;
       }
@@ -65,13 +76,14 @@ components.html("""
 
 # Formulario
 with st.expander("🎁 Cargar datos del ganador", expanded=False):
-    with st.form("formulario"):
-        nombre = st.text_input("Nombre y apellido")
-        razon = st.text_input("Razón social")
-        whatsapp = st.text_input("WhatsApp (con código país)", placeholder="+549...")
-        premio = st.selectbox("Premio ganado", ["", "10off", "20off", "25off", "5off", "Seguí participando"])
+    with st.form("formulario", clear_on_submit=True):
+        nombre = st.text_input("Nombre y apellido*")
+        razon = st.text_input("Razón social*")
+        whatsapp = st.text_input("WhatsApp (con código país)*", placeholder="+549...")
+        premio = st.selectbox("Premio ganado*", ["", "10off", "20off", "25off", "5off", "Seguí participando"])
+        
         enviar = st.form_submit_button("Enviar y guardar")
-
+        
         if enviar:
             if nombre and razon and whatsapp and premio:
                 datos = {
@@ -80,27 +92,36 @@ with st.expander("🎁 Cargar datos del ganador", expanded=False):
                     "whatsapp": whatsapp,
                     "premio": premio
                 }
+                
                 try:
-                    # Añadimos parámetros a la URL para evitar problemas CORS
+                    # Envío como GET (más simple para pruebas)
                     params = urllib.parse.urlencode(datos)
                     url_completa = f"{WEB_APP_URL}?{params}"
-                    
                     respuesta = requests.get(url_completa)
                     
-                    if respuesta.status_code == 200:
+                    # Alternativa usando POST (descomentar si prefieres)
+                    # headers = {'Content-Type': 'application/json'}
+                    # respuesta = requests.post(WEB_APP_URL, json=datos, headers=headers)
+                    
+                    respuesta.raise_for_status()  # Lanza error para HTTP errors
+                    
+                    try:
                         respuesta_json = respuesta.json()
-                        if respuesta_json.get("status") == "ok":
-                            mensaje = f"¡Felicitaciones {nombre}! 🎉 Obtuviste el premio: *{premio}*. Presentá este mensaje para canjearlo."
-                            link = f"https://wa.me/{whatsapp.strip()}?text={urllib.parse.quote(mensaje)}"
-                            st.success("✅ Datos guardados correctamente. Abriendo WhatsApp...")
-                            components.html(f"<script>window.open('{link}', '_blank')</script>", height=0)
+                        if respuesta_json.get("status") in ["ok", "success"]:
+                            mensaje = f"¡Felicitaciones {nombre}! 🎉 Obtuviste: *{premio}*. Presentá este mensaje para canjearlo."
+                            whatsapp_limpio = whatsapp.strip().replace(" ", "").replace("-", "")
+                            link = f"https://wa.me/{whatsapp_limpio}?text={urllib.parse.quote(mensaje)}"
+                            st.success("✅ Datos guardados correctamente!")
+                            st.markdown(f"[Abrir conversación de WhatsApp]({link})", unsafe_allow_html=True)
                         else:
-                            error_msg = respuesta_json.get("message", "Error desconocido")
-                            st.error(f"❌ Error al guardar los datos: {error_msg}")
-                    else:
-                        st.error(f"❌ Error HTTP {respuesta.status_code}")
-                except Exception as e:
+                            st.error(f"❌ Error: {respuesta_json.get('message', 'Error desconocido')}")
+                    except ValueError:
+                        st.error(f"❌ Respuesta no válida: {respuesta.text}")
+                        st.info("Prueba a desplegar nuevamente tu Google Apps Script")
+                
+                except requests.exceptions.RequestException as e:
                     st.error(f"❌ Error de conexión: {str(e)}")
+                    st.info("Verifica tu conexión a internet o la URL del script")
+            
             else:
-                st.warning("⚠️ Por favor completá todos los campos.")
-
+                st.warning("⚠️ Por favor completa todos los campos obligatorios (*)")
