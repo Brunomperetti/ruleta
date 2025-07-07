@@ -90,4 +90,3 @@ with st.expander("🎁 Cargar datos del ganador", expanded=False):
             else:
                 st.warning("⚠️ Por favor completá todos los campos.")
 
-
