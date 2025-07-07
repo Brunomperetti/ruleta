@@ -4,7 +4,7 @@ import urllib.parse
 import requests
 
 # URL pública de tu Google Apps Script Web App
-WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwl6K4VtNWU9VCe-6Uhc5NEyUjysXl-FhM5JBJ8gJnjqZRjXjw25-U0l97cS4e65Hdx/exec"
+WEB_APP_URL = "https://script.google.com/macros/s/AKfycbw30rmkDj2pLOL5FwHczI0y13Vcsu4VFB5Nyxh_2ZsuYq2q-uRoj5Py3fhQHTCN57j7/exec"
 
 st.set_page_config(page_title="Ruleta Mágica Millex", layout="wide")
 
@@ -78,18 +78,19 @@ with st.expander("🎁 Cargar datos del ganador", expanded=False):
                 }
                 try:
                     respuesta = requests.post(WEB_APP_URL, json=datos)
-                    st.write("Respuesta del Web App:", respuesta.text)
-                    if respuesta.status_code == 200 and "ok" in respuesta.text:
+                    respuesta_json = respuesta.json()
+
+                    if respuesta.status_code == 200 and respuesta_json.get("status") == "ok":
                         mensaje = f"¡Felicitaciones {nombre}! 🎉 Obtuviste el premio: *{premio}*. Presentá este mensaje para canjearlo."
                         link = f"https://wa.me/{whatsapp.strip()}?text={urllib.parse.quote(mensaje)}"
                         st.success("✅ Datos guardados correctamente. Abriendo WhatsApp...")
                         components.html(f"<script>window.open('{link}', '_blank')</script>", height=0)
                     else:
-                        st.error("❌ Error al guardar los datos en Google Sheets.")
+                        error_msg = respuesta_json.get("message", "Error desconocido")
+                        st.error(f"❌ Error al guardar los datos en Google Sheets: {error_msg}")
                 except Exception as e:
                     st.error(f"❌ Error de conexión: {e}")
             else:
                 st.warning("⚠️ Por favor completá todos los campos.")
-
 
 
