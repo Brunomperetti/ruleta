@@ -4,7 +4,8 @@ import urllib.parse
 import requests
 
 # Nueva URL pública de Google Apps Script Web App
-WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzky9Nqrs7V2ly8_SnccOD5Ytw9W5DC0byQpR_iNfGMwYNYpaRQv_Pk8ALvKvcSeAO8/exec"
+WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwGXQfNJW-bNQabK60V2Bxft0hCSmZASFnAAe58rJ8hTXCpNKiztr-Jx7FZLPwTO9Vr/exec"
+
 
 st.set_page_config(page_title="Ruleta Mágica Millex", layout="wide")
 
