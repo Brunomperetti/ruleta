@@ -3,8 +3,8 @@ import streamlit.components.v1 as components
 import urllib.parse
 import requests
 
-# URL de tu Apps Script
-WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyoSYcwlAQPGDnH4LCksSFzP60IZODnmylQ63wjxuA0afc23pXvPoV1HY5MhNTH1tqsug/exec"
+# URL actualizada de tu Apps Script
+WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxg1j5w57os20mywlO0Kup-kqMxfnCuIeTbJBcSqJFGPizKVls1xp5WErH0K_yKypMQ/exec"
 
 # Configuración de la página
 st.set_page_config(page_title="Ruleta Mágica Millex", layout="wide")
@@ -81,21 +81,19 @@ with st.expander("🎁 Cargar datos del ganador", expanded=False):
         razon = st.text_input("Razón social*")
         whatsapp = st.text_input("WhatsApp (con código país)*", placeholder="+549...")
 
-        # Nuevos campos
-        cliente_tipo = st.radio("Cliente*", ["Nuevo", "Actual"])
-        tipo_cliente = st.selectbox("Tipo de cliente*", ["", "Pet Shop", "Veterinaria", "Distribuidora", "Otro"])
-        provincia = st.text_input("Provincia*")
-        ciudad = st.text_input("Ciudad*")
-        marcas = st.multiselect("Marcas que maneja*", [
-            "AFP", "Beeztees", "Flexi", "Boyu", "Shanda", "Dayaing", "Haintech", "The Pets", "Otros"
-        ])
+        cliente_tipo = st.radio("¿Es cliente nuevo o actual?*", ["Nuevo", "Actual"])
+        tipo_cliente = st.selectbox("Tipo de cliente*", ["Pet Shop", "Veterinaria", "Distribuidora", "Otro"])
+        provincia = st.text_input("Provincia")
+        ciudad = st.text_input("Ciudad")
+
+        marcas = st.multiselect("Marcas que maneja", ["GiGwi", "AFP", "Beeztees", "Flexi", "Boyu", "Shanda", "Dayaing", "Haintech", "The Pets", "Otros"])
 
         premio = st.selectbox("Premio ganado*", ["", "10off", "20off", "25off", "5off", "Seguí participando"])
         
         enviar = st.form_submit_button("Enviar y guardar")
         
         if enviar:
-            if nombre and razon and whatsapp and premio and cliente_tipo and tipo_cliente and provincia and ciudad:
+            if nombre and razon and whatsapp and premio:
                 datos = {
                     "nombre": nombre,
                     "razonSocial": razon,
@@ -109,11 +107,12 @@ with st.expander("🎁 Cargar datos del ganador", expanded=False):
                 }
                 
                 try:
-                    # Envío como POST (recomendado)
+                    # Envío como POST
                     headers = {'Content-Type': 'application/json'}
                     respuesta = requests.post(WEB_APP_URL, json=datos, headers=headers)
                     
                     respuesta.raise_for_status()
+                    
                     try:
                         respuesta_json = respuesta.json()
                         if respuesta_json.get("status") in ["success", "ok"]:
@@ -125,7 +124,7 @@ with st.expander("🎁 Cargar datos del ganador", expanded=False):
                         else:
                             st.error(f"❌ Error: {respuesta_json.get('message', 'Error desconocido')}")
                     except ValueError:
-                        st.error("❌ La respuesta no es JSON válido. Verifica la configuración del script.")
+                        st.error("❌ La respuesta no es JSON válido.")
                         st.info("Respuesta cruda recibida: " + respuesta.text[:200] + "...")
                 
                 except requests.exceptions.RequestException as e:
@@ -134,4 +133,5 @@ with st.expander("🎁 Cargar datos del ganador", expanded=False):
             
             else:
                 st.warning("⚠️ Por favor completa todos los campos obligatorios (*)")
+
 
