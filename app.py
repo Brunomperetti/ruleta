@@ -1,12 +1,10 @@
 import streamlit as st
 import streamlit.components.v1 as components
-import pandas as pd
 import urllib.parse
 import requests
-from datetime import datetime
 
 # --- GOOGLE APPS SCRIPT WEB APP URL ---
-WEB_APP_URL = "https://script.google.com/macros/s/AKfycbXXXXXXXXXXXX/exec"  # ← Pega acá la URL del Web App
+WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzn6YqW07Yw9mVNdvrsqAhBwliYsy_Jd-r3hEvcoEtXdo-4sbCaXR19XQVq_KMe3P_t/exec"
 
 # --- INTERFAZ ---
 st.set_page_config(page_title="Ruleta Mágica Millex", layout="wide")
@@ -88,18 +86,23 @@ with st.expander("🎁 Cargar datos del ganador", expanded=False):
                 try:
                     # Enviar datos al Web App
                     respuesta = requests.post(WEB_APP_URL, json=datos)
-                    if respuesta.status_code == 200 and respuesta.json().get("status") == "ok":
+
+                    # Debug: mostrar respuesta del Web App
+                    st.write("Respuesta del Web App:", respuesta.text)
+
+                    if respuesta.status_code == 200 and "ok" in respuesta.text:
                         # Enviar por WhatsApp
                         mensaje = f"¡Felicitaciones {nombre}! 🎉 Obtuviste el premio: *{premio}*. Presentá este mensaje para canjearlo."
                         link = f"https://wa.me/{whatsapp.strip()}?text={urllib.parse.quote(mensaje)}"
                         st.success("✅ Datos guardados correctamente. Abriendo WhatsApp...")
                         components.html(f"<script>window.open('{link}', '_blank')</script>", height=0)
                     else:
-                        st.error("❌ Error al guardar los datos. Intentalo de nuevo.")
+                        st.error("❌ Error al guardar los datos en Google Sheets.")
                 except Exception as e:
                     st.error(f"❌ Error de conexión: {e}")
             else:
                 st.warning("⚠️ Por favor completá todos los campos.")
+
 
 
 
