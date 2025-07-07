@@ -1,56 +1,45 @@
 import streamlit as st
-import streamlit.components.v1 as components
 import urllib.parse
 import requests
-
-# URL pública de tu Google Apps Script Web App
-WEB_APP_URL = "https://script.google.com/macros/s/AKfycbw30rmkDj2pLOL5FwHczI0y13Vcsu4VFB5Nyxh_2ZsuYq2q-uRoj5Py3fhQHTCN57j7/exec"
+import json
+from datetime import datetime
+import streamlit.components.v1 as components
 
 st.set_page_config(page_title="Ruleta Mágica Millex", layout="wide")
 
+# ⚠️ Usa la URL /exec, no /dev
+gooogle_apps_script_url = "https://script.google.com/macros/s/AKfycbxGthdziUjWC3jB5_0YBDfnXCcTBj-7RGD2W4_mf5I/exec"
+
+# CSS + Título + Ruleta
 st.markdown("""
 <style>
-    header, footer {visibility: hidden;}
-    .block-container {padding: 0; margin: 0;}
-    .title-container {
-        background: rgba(0,0,0,0.9);
-        padding: 16px 32px;
-        text-align: center;
-        color: white;
-        font-family: 'Arial Black';
-        font-size: 2.5rem;
-        text-shadow: 1px 1px 4px rgba(255,255,255,0.5);
-        border-bottom: 1px solid #333;
-    }
-    ::-webkit-scrollbar {
-        display: none;
-    }
+header, footer {visibility: hidden;}
+.block-container {padding: 0; margin: 0;}
+.title-container {
+    background: rgba(0,0,0,0.9);
+    padding: 16px 32px;
+    text-align: center;
+    color: white;
+    font-family: 'Arial Black';
+    font-size: 2.5rem;
+    text-shadow: 1px 1px 4px rgba(255,255,255,0.5);
+    border-bottom: 1px solid #333;
+}
+::-webkit-scrollbar {display: none;}
 </style>
 """, unsafe_allow_html=True)
 
 st.markdown('<div class="title-container">RULETA MÁGICA MILLEX</div>', unsafe_allow_html=True)
-
 components.html("""
 <html>
   <head>
     <style>
-      body {
-        margin: 0;
-        overflow: hidden;
-        background: transparent;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        height: 100vh;
+      html, body {
+        margin: 0; height: 100%; overflow: hidden; background: transparent;
+        display: flex; justify-content: center; align-items: center;
       }
       iframe {
-        border: none;
-        border-radius: 12px;
-        width: 600px;
-        height: 600px;
-        box-shadow: none;
-        overflow: hidden;
-        display: block;
+        border: none; width: 600px; height: 600px; border-radius: 12px;
       }
     </style>
   </head>
@@ -59,6 +48,19 @@ components.html("""
   </body>
 </html>
 """, height=620, scrolling=False)
+
+# Formulario
+def guardar_en_sheet(nombre, razon, whatsapp, premio, fecha_hora):
+    data = {
+        "nombre": nombre,
+        "razon": razon,
+        "whatsapp": whatsapp,
+        "premio": premio,
+        "fecha_hora": fecha_hora
+    }
+    headers = {"Content-Type": "application/json"}
+    res = requests.post(gooogle_apps_script_url, data=json.dumps(data), headers=headers)
+    return res
 
 with st.expander("🎁 Cargar datos del ganador", expanded=False):
     with st.form("formulario"):
@@ -70,31 +72,19 @@ with st.expander("🎁 Cargar datos del ganador", expanded=False):
 
         if enviar:
             if nombre and razon and whatsapp and premio:
-                datos = {
-                    "nombre": nombre,
-                    "razonSocial": razon,
-                    "whatsapp": whatsapp,
-                    "premio": premio
-                }
-                try:
-                    respuesta = requests.post(WEB_APP_URL, json=datos)
-                    if respuesta.status_code == 200:
-                        try:
-                            respuesta_json = respuesta.json()
-                            if respuesta_json.get("status") == "ok":
-                                mensaje = f"¡Felicitaciones {nombre}! 🎉 Obtuviste el premio: *{premio}*. Presentá este mensaje para canjearlo."
-                                link = f"https://wa.me/{whatsapp.strip()}?text={urllib.parse.quote(mensaje)}"
-                                st.success("✅ Datos guardados correctamente. Abriendo WhatsApp...")
-                                components.html(f"<script>window.open('{link}', '_blank')</script>", height=0)
-                            else:
-                                st.error(f"❌ Error: {respuesta_json.get('message')}")
-                        except ValueError:
-                            st.error("❌ Respuesta inválida del Web App (no es JSON).")
-                    else:
-                        st.error(f"❌ Error HTTP: {respuesta.status_code}")
-                except Exception as e:
-                    st.error(f"❌ Error de conexión: {e}")
+                fecha_hora = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                response = guardar_en_sheet(nombre, razon, whatsapp, premio, fecha_hora)
+
+                if response.status_code == 200:
+                    st.success("✅ Datos guardados correctamente en Google Sheet.")
+                else:
+                    st.error(f"❌ Error al guardar en Google Sheet. Código: {response.status_code}, Respuesta: {response.text}")
+
+                mensaje = f"¡Felicitaciones {nombre}! 🎉 Obtuviste el premio: *{premio}*. Presentá este mensaje para canjearlo."
+                link = f"https://wa.me/{whatsapp.strip()}?text={urllib.parse.quote(mensaje)}"
+                st.markdown(f"[Abrir WhatsApp para enviar mensaje]({link})", unsafe_allow_html=True)
             else:
                 st.warning("⚠️ Por favor completá todos los campos.")
+
 
 
