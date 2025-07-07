@@ -3,7 +3,7 @@ import streamlit.components.v1 as components
 import urllib.parse
 import requests
 
-# Reemplaza con tu NUEVA URL después de volver a implementar
+# URL de tu Apps Script
 WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwZMoIC7MNqmUpjj2uRID1Jhk_Y82W5vl5e6fnnRJkgiPt1FpBNcpafRx3I3LU205kLHQ/exec"
 
 # Configuración de la página
@@ -80,16 +80,31 @@ with st.expander("🎁 Cargar datos del ganador", expanded=False):
         nombre = st.text_input("Nombre y apellido*")
         razon = st.text_input("Razón social*")
         whatsapp = st.text_input("WhatsApp (con código país)*", placeholder="+549...")
+
+        # Nuevos campos
+        cliente_tipo = st.radio("Cliente*", ["Nuevo", "Actual"])
+        tipo_cliente = st.selectbox("Tipo de cliente*", ["", "Pet Shop", "Veterinaria", "Distribuidora", "Otro"])
+        provincia = st.text_input("Provincia*")
+        ciudad = st.text_input("Ciudad*")
+        marcas = st.multiselect("Marcas que maneja*", [
+            "AFP", "Beeztees", "Flexi", "Boyu", "Shanda", "Dayaing", "Haintech", "The Pets", "Otros"
+        ])
+
         premio = st.selectbox("Premio ganado*", ["", "10off", "20off", "25off", "5off", "Seguí participando"])
         
         enviar = st.form_submit_button("Enviar y guardar")
         
         if enviar:
-            if nombre and razon and whatsapp and premio:
+            if nombre and razon and whatsapp and premio and cliente_tipo and tipo_cliente and provincia and ciudad:
                 datos = {
                     "nombre": nombre,
                     "razonSocial": razon,
                     "whatsapp": whatsapp,
+                    "clienteTipo": cliente_tipo,
+                    "tipoCliente": tipo_cliente,
+                    "provincia": provincia,
+                    "ciudad": ciudad,
+                    "marcas": ", ".join(marcas),
                     "premio": premio
                 }
                 
@@ -98,9 +113,7 @@ with st.expander("🎁 Cargar datos del ganador", expanded=False):
                     headers = {'Content-Type': 'application/json'}
                     respuesta = requests.post(WEB_APP_URL, json=datos, headers=headers)
                     
-                    # Verificación mejorada de la respuesta
-                    respuesta.raise_for_status()  # Lanza error para respuestas HTTP no exitosas
-                    
+                    respuesta.raise_for_status()
                     try:
                         respuesta_json = respuesta.json()
                         if respuesta_json.get("status") in ["success", "ok"]:
@@ -121,3 +134,4 @@ with st.expander("🎁 Cargar datos del ganador", expanded=False):
             
             else:
                 st.warning("⚠️ Por favor completa todos los campos obligatorios (*)")
+
