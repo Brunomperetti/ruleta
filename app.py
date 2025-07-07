@@ -1,32 +1,71 @@
 import streamlit as st
 import streamlit.components.v1 as components
+import pandas as pd
+import urllib.parse
+from datetime import datetime
 import gspread
+from google.oauth2.service_account import Credentials
 
-# ID de la hoja de cálculo pública
+# --- GOOGLE SHEETS CONFIG ---
+SCOPES = ["https://www.googleapis.com/auth/spreadsheets"]
 SPREADSHEET_ID = "1P8YJsjXVU3rqUH4zJx2vM0qtT43PsDfXuZ5nOhbW_sc"
 SHEET_NAME = "Sheet1"
 
-# Conexión anónima (solo funciona si la hoja es pública)
-gc = gspread.Client(auth=None)
-sheet = gc.open_by_key(SPREADSHEET_ID).worksheet(SHEET_NAME)
+credentials = Credentials.from_service_account_file(
+    "credenciales.json", scopes=SCOPES
+)
+client = gspread.authorize(credentials)
+sheet = client.open_by_key(SPREADSHEET_ID).worksheet(SHEET_NAME)
 
-# --- UI ---
+# --- INTERFAZ ---
 st.set_page_config(page_title="Ruleta Mágica Millex", layout="wide")
 
+# CSS personalizado
+st.markdown("""
+<style>
+    header, footer {visibility: hidden;}
+    .block-container {padding: 0; margin: 0;}
+    .title-container {
+        background: rgba(0,0,0,0.9);
+        padding: 16px 32px;
+        text-align: center;
+        color: white;
+        font-family: 'Arial Black';
+        font-size: 2.5rem;
+        text-shadow: 1px 1px 4px rgba(255,255,255,0.5);
+        border-bottom: 1px solid #333;
+    }
+    ::-webkit-scrollbar {
+        display: none;
+    }
+    iframe::-webkit-scrollbar {
+        display: none;
+    }
+</style>
+""", unsafe_allow_html=True)
+
+# Título
+st.markdown('<div class="title-container">RULETA MÁGICA MILLEX</div>', unsafe_allow_html=True)
+
+# Ruleta centrada, grande y limpia (sin scroll, sin bordes)
 components.html("""
 <html>
   <head>
     <style>
       html, body {
         margin: 0;
-        padding: 0;
         height: 100%;
+        overflow: hidden;
         background: transparent;
+        display: flex;
+        justify-content: center;
+        align-items: center;
       }
       iframe {
-        width: 100%;
-        height: 100%;
         border: none;
+        width: 600px;
+        height: 600px;
+        border-radius: 12px;
       }
     </style>
   </head>
@@ -34,25 +73,29 @@ components.html("""
     <iframe src="https://wheelofnames.com/es/kpz-yz7"></iframe>
   </body>
 </html>
-""", height=800, scrolling=False)
+""", height=620, scrolling=False)
 
-# Formulario
-with st.expander("🎁 Cargar datos del ganador"):
-    nombre = st.text_input("Nombre y apellido")
-    razon = st.text_input("Razón social")
-    whatsapp = st.text_input("WhatsApp (con código país)", placeholder="+549...")
-    premio = st.selectbox("Premio ganado", ["", "10off", "20off", "25off", "5off", "Seguí participando"])
-    if st.button("Enviar y guardar"):
-        if nombre and razon and whatsapp and premio:
-            fila = [nombre, razon, whatsapp, premio]
-            try:
+# Panel para cargar datos del ganador
+with st.expander("🎁 Cargar datos del ganador", expanded=False):
+    with st.form("formulario"):
+        nombre = st.text_input("Nombre y apellido")
+        razon = st.text_input("Razón social")
+        whatsapp = st.text_input("WhatsApp (con código país)", placeholder="+549...")
+        premio = st.selectbox("Premio ganado", ["", "10off", "20off", "25off", "5off", "Seguí participando"])
+        enviar = st.form_submit_button("Enviar y guardar")
+
+        if enviar:
+            if nombre and razon and whatsapp and premio:
+                # Guardar en Google Sheets con columnas
+                fila = [datetime.now().strftime("%Y-%m-%d %H:%M:%S"), nombre, razon, whatsapp, premio]
                 sheet.append_row(fila)
-                st.success("✅ Datos guardados correctamente")
-            except Exception as e:
-                st.error(f"❌ Error al guardar: {e}")
-        else:
-            st.warning("⚠️ Completá todos los campos.")
 
-
+                # Enviar por WhatsApp
+                mensaje = f"¡Felicitaciones {nombre}! 🎉 Obtuviste el premio: *{premio}*. Presentá este mensaje para canjearlo."
+                link = f"https://wa.me/{whatsapp.strip()}?text={urllib.parse.quote(mensaje)}"
+                st.success("✅ Datos guardados correctamente. Abriendo WhatsApp...")
+                components.html(f"<script>window.open('{link}', '_blank')</script>", height=0)
+            else:
+                st.warning("⚠️ Por favor completá todos los campos.")
 
 
