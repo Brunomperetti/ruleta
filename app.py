@@ -2,7 +2,11 @@ import streamlit as st
 import streamlit.components.v1 as components
 import pandas as pd
 import urllib.parse
+import requests
 from datetime import datetime
+
+# --- GOOGLE APPS SCRIPT WEB APP URL ---
+WEB_APP_URL = "https://script.google.com/macros/s/AKfycbXXXXXXXXXXXX/exec"  # ← Pega acá la URL del Web App
 
 # --- INTERFAZ ---
 st.set_page_config(page_title="Ruleta Mágica Millex", layout="wide")
@@ -25,34 +29,34 @@ st.markdown("""
     ::-webkit-scrollbar {
         display: none;
     }
-    iframe::-webkit-scrollbar {
-        display: none;
-    }
 </style>
 """, unsafe_allow_html=True)
 
 # Título
 st.markdown('<div class="title-container">RULETA MÁGICA MILLEX</div>', unsafe_allow_html=True)
 
-# Ruleta centrada y limpia
+# Ruleta centrada, grande y sin marco ni scroll
 components.html("""
 <html>
   <head>
     <style>
-      html, body {
+      body {
         margin: 0;
-        height: 100%;
         overflow: hidden;
         background: transparent;
         display: flex;
         justify-content: center;
         align-items: center;
+        height: 100vh;
       }
       iframe {
         border: none;
+        border-radius: 12px;
         width: 600px;
         height: 600px;
-        border-radius: 12px;
+        box-shadow: none;
+        overflow: hidden;
+        display: block;
       }
     </style>
   </head>
@@ -62,7 +66,7 @@ components.html("""
 </html>
 """, height=620, scrolling=False)
 
-# Panel para cargar datos del ganador
+# Panel desplegable para cargar datos
 with st.expander("🎁 Cargar datos del ganador", expanded=False):
     with st.form("formulario"):
         nombre = st.text_input("Nombre y apellido")
@@ -73,20 +77,28 @@ with st.expander("🎁 Cargar datos del ganador", expanded=False):
 
         if enviar:
             if nombre and razon and whatsapp and premio:
-                fecha_hora = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-                
-                # Mostrar los datos para copiar manualmente
-                st.success("✅ Datos para guardar:")
-                st.write(f"**Nombre y apellido:** {nombre}")
-                st.write(f"**Razón social:** {razon}")
-                st.write(f"**WhatsApp:** {whatsapp}")
-                st.write(f"**Premio:** {premio}")
-                st.write(f"**Fecha y hora:** {fecha_hora}")
+                # Armar datos para enviar al Web App
+                datos = {
+                    "nombre": nombre,
+                    "razonSocial": razon,
+                    "whatsapp": whatsapp,
+                    "premio": premio
+                }
 
-                # Enviar por WhatsApp
-                mensaje = f"¡Felicitaciones {nombre}! 🎉 Obtuviste el premio: *{premio}*. Presentá este mensaje para canjearlo."
-                link = f"https://wa.me/{whatsapp.strip()}?text={urllib.parse.quote(mensaje)}"
-                st.markdown(f"[Abrir WhatsApp para enviar mensaje]({link})", unsafe_allow_html=True)
+                try:
+                    # Enviar datos al Web App
+                    respuesta = requests.post(WEB_APP_URL, json=datos)
+                    if respuesta.status_code == 200 and respuesta.json().get("status") == "ok":
+                        # Enviar por WhatsApp
+                        mensaje = f"¡Felicitaciones {nombre}! 🎉 Obtuviste el premio: *{premio}*. Presentá este mensaje para canjearlo."
+                        link = f"https://wa.me/{whatsapp.strip()}?text={urllib.parse.quote(mensaje)}"
+                        st.success("✅ Datos guardados correctamente. Abriendo WhatsApp...")
+                        components.html(f"<script>window.open('{link}', '_blank')</script>", height=0)
+                    else:
+                        st.error("❌ Error al guardar los datos. Intentalo de nuevo.")
+                except Exception as e:
+                    st.error(f"❌ Error de conexión: {e}")
             else:
                 st.warning("⚠️ Por favor completá todos los campos.")
+
 
