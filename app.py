@@ -3,13 +3,10 @@ import streamlit.components.v1 as components
 import urllib.parse
 import requests
 
-# Nueva URL pública de Google Apps Script Web App
 WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwGXQfNJW-bNQabK60V2Bxft0hCSmZASFnAAe58rJ8hTXCpNKiztr-Jx7FZLPwTO9Vr/exec"
-
 
 st.set_page_config(page_title="Ruleta Mágica Millex", layout="wide")
 
-# Estilos
 st.markdown("""
 <style>
     header, footer {visibility: hidden;}
@@ -24,14 +21,14 @@ st.markdown("""
         text-shadow: 1px 1px 4px rgba(255,255,255,0.5);
         border-bottom: 1px solid #333;
     }
-    ::-webkit-scrollbar { display: none; }
+    ::-webkit-scrollbar {
+        display: none;
+    }
 </style>
 """, unsafe_allow_html=True)
 
-# Título
 st.markdown('<div class="title-container">RULETA MÁGICA MILLEX</div>', unsafe_allow_html=True)
 
-# Ruleta
 components.html("""
 <html>
   <head>
@@ -62,7 +59,6 @@ components.html("""
 </html>
 """, height=620, scrolling=False)
 
-# Formulario
 with st.expander("🎁 Cargar datos del ganador", expanded=False):
     with st.form("formulario"):
         nombre = st.text_input("Nombre y apellido")
@@ -80,15 +76,17 @@ with st.expander("🎁 Cargar datos del ganador", expanded=False):
                     "premio": premio
                 }
                 try:
-                    # Enviar datos al Apps Script como parámetros
-                    respuesta = requests.get(WEB_APP_URL, params=datos)
-                    if respuesta.status_code == 200 and "ok" in respuesta.text.lower():
+                    respuesta = requests.post(WEB_APP_URL, json=datos)
+                    respuesta_json = respuesta.json()
+
+                    if respuesta.status_code == 200 and respuesta_json.get("status") == "ok":
                         mensaje = f"¡Felicitaciones {nombre}! 🎉 Obtuviste el premio: *{premio}*. Presentá este mensaje para canjearlo."
                         link = f"https://wa.me/{whatsapp.strip()}?text={urllib.parse.quote(mensaje)}"
                         st.success("✅ Datos guardados correctamente. Abriendo WhatsApp...")
                         components.html(f"<script>window.open('{link}', '_blank')</script>", height=0)
                     else:
-                        st.error("❌ Error al guardar los datos en Google Sheets.")
+                        error_msg = respuesta_json.get("message", "Error desconocido")
+                        st.error(f"❌ Error al guardar los datos en Google Sheets: {error_msg}")
                 except Exception as e:
                     st.error(f"❌ Error de conexión: {e}")
             else:
