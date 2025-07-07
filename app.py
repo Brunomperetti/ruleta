@@ -3,10 +3,13 @@ import streamlit.components.v1 as components
 import urllib.parse
 import requests
 
-WEB_APP_URL = "https://script.google.com/macros/s/AKfycbz9Dtw6E5LvjD8n6D_QBBioO2BXWqiALpkk3KC6ougQdXRTWcSscHA9IUWf8GnqoF4_/exec"
+# Reemplaza con tu URL actualizada después de volver a desplegar
+WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxfRIC0a9q0sFW9XOdayCRio2oR8ggy9NfgZcBfRaXF0UPuUiduibbvKweFOcx6xvcJ/exec"
 
+# Configuración de la página
 st.set_page_config(page_title="Ruleta Mágica Millex", layout="wide")
 
+# Estilos CSS
 st.markdown("""
 <style>
     header, footer {visibility: hidden;}
@@ -29,6 +32,7 @@ st.markdown("""
 
 st.markdown('<div class="title-container">RULETA MÁGICA MILLEX</div>', unsafe_allow_html=True)
 
+# Ruleta
 components.html("""
 <html>
   <head>
@@ -59,6 +63,7 @@ components.html("""
 </html>
 """, height=620, scrolling=False)
 
+# Formulario
 with st.expander("🎁 Cargar datos del ganador", expanded=False):
     with st.form("formulario"):
         nombre = st.text_input("Nombre y apellido")
@@ -76,21 +81,26 @@ with st.expander("🎁 Cargar datos del ganador", expanded=False):
                     "premio": premio
                 }
                 try:
-                    respuesta = requests.post(WEB_APP_URL, json=datos)
-                    respuesta_json = respuesta.json()
-
-                    if respuesta.status_code == 200 and respuesta_json.get("status") == "ok":
-                        mensaje = f"¡Felicitaciones {nombre}! 🎉 Obtuviste el premio: *{premio}*. Presentá este mensaje para canjearlo."
-                        link = f"https://wa.me/{whatsapp.strip()}?text={urllib.parse.quote(mensaje)}"
-                        st.success("✅ Datos guardados correctamente. Abriendo WhatsApp...")
-                        components.html(f"<script>window.open('{link}', '_blank')</script>", height=0)
+                    # Añadimos parámetros a la URL para evitar problemas CORS
+                    params = urllib.parse.urlencode(datos)
+                    url_completa = f"{WEB_APP_URL}?{params}"
+                    
+                    respuesta = requests.get(url_completa)
+                    
+                    if respuesta.status_code == 200:
+                        respuesta_json = respuesta.json()
+                        if respuesta_json.get("status") == "ok":
+                            mensaje = f"¡Felicitaciones {nombre}! 🎉 Obtuviste el premio: *{premio}*. Presentá este mensaje para canjearlo."
+                            link = f"https://wa.me/{whatsapp.strip()}?text={urllib.parse.quote(mensaje)}"
+                            st.success("✅ Datos guardados correctamente. Abriendo WhatsApp...")
+                            components.html(f"<script>window.open('{link}', '_blank')</script>", height=0)
+                        else:
+                            error_msg = respuesta_json.get("message", "Error desconocido")
+                            st.error(f"❌ Error al guardar los datos: {error_msg}")
                     else:
-                        error_msg = respuesta_json.get("message", "Error desconocido")
-                        st.error(f"❌ Error al guardar los datos en Google Sheets: {error_msg}")
+                        st.error(f"❌ Error HTTP {respuesta.status_code}")
                 except Exception as e:
-                    st.error(f"❌ Error de conexión: {e}")
+                    st.error(f"❌ Error de conexión: {str(e)}")
             else:
                 st.warning("⚠️ Por favor completá todos los campos.")
-
-
 
