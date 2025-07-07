@@ -3,8 +3,8 @@ import streamlit.components.v1 as components
 import urllib.parse
 import requests
 
-# Reemplaza con tu nueva URL de despliegue
-WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxs79v18DYnXhJL-_GhWACY46ME2x98SWa6_WqJ0qPbq5jcRyWcOEpusBwWsLqEylDk/exec"
+# Reemplaza con tu NUEVA URL después de volver a implementar
+WEB_APP_URL = "https://script.google.com/macros/s/AKfycbz29VlbCK9hGdpPr_mODE4qN4L-K2SN0CQR4jTO6GFpAIPEpIPCE1DR-rc7x95JHaj8rQ/exec"
 
 # Configuración de la página
 st.set_page_config(page_title="Ruleta Mágica Millex", layout="wide")
@@ -94,20 +94,16 @@ with st.expander("🎁 Cargar datos del ganador", expanded=False):
                 }
                 
                 try:
-                    # Envío como GET (más simple para pruebas)
-                    params = urllib.parse.urlencode(datos)
-                    url_completa = f"{WEB_APP_URL}?{params}"
-                    respuesta = requests.get(url_completa)
+                    # Envío como POST (recomendado)
+                    headers = {'Content-Type': 'application/json'}
+                    respuesta = requests.post(WEB_APP_URL, json=datos, headers=headers)
                     
-                    # Alternativa usando POST (descomentar si prefieres)
-                    # headers = {'Content-Type': 'application/json'}
-                    # respuesta = requests.post(WEB_APP_URL, json=datos, headers=headers)
-                    
-                    respuesta.raise_for_status()  # Lanza error para HTTP errors
+                    # Verificación mejorada de la respuesta
+                    respuesta.raise_for_status()  # Lanza error para respuestas HTTP no exitosas
                     
                     try:
                         respuesta_json = respuesta.json()
-                        if respuesta_json.get("status") in ["ok", "success"]:
+                        if respuesta_json.get("status") in ["success", "ok"]:
                             mensaje = f"¡Felicitaciones {nombre}! 🎉 Obtuviste: *{premio}*. Presentá este mensaje para canjearlo."
                             whatsapp_limpio = whatsapp.strip().replace(" ", "").replace("-", "")
                             link = f"https://wa.me/{whatsapp_limpio}?text={urllib.parse.quote(mensaje)}"
@@ -116,8 +112,8 @@ with st.expander("🎁 Cargar datos del ganador", expanded=False):
                         else:
                             st.error(f"❌ Error: {respuesta_json.get('message', 'Error desconocido')}")
                     except ValueError:
-                        st.error(f"❌ Respuesta no válida: {respuesta.text}")
-                        st.info("Prueba a desplegar nuevamente tu Google Apps Script")
+                        st.error("❌ La respuesta no es JSON válido. Verifica la configuración del script.")
+                        st.info("Respuesta cruda recibida: " + respuesta.text[:200] + "...")
                 
                 except requests.exceptions.RequestException as e:
                     st.error(f"❌ Error de conexión: {str(e)}")
