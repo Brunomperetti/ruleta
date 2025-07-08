@@ -38,58 +38,57 @@ st.markdown("""
         border-radius: 8px;
         padding: 10px;
     }
-    .ruleta-container {
+</style>
+""", unsafe_allow_html=True)
+
+st.markdown('<div class="title-container">RULETA MÁGICA MILLEX</div>', unsafe_allow_html=True)
+
+# Ruleta
+components.html("""
+<html>
+  <head>
+    <style>
+      body {
+        margin: 0;
+        overflow: hidden;
+        background: transparent;
         display: flex;
         justify-content: center;
         align-items: center;
         height: 100vh;
-        background-color: #000;
-        margin-bottom: -150px;
-    }
-    .ruleta-iframe {
-        width: 1000px;
-        height: 1000px;
+      }
+      iframe {
         border: none;
-        transform: scale(0.9);
-    }
-    .form-container {
-        padding: 20px;
-        background: white;
-        z-index: 100;
-        position: relative;
-    }
-    body {
+        border-radius: 12px;
+        width: 600px;
+        height: 600px;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.2);
         overflow: hidden;
-    }
-</style>
-""", unsafe_allow_html=True)
+        display: block;
+      }
+    </style>
+  </head>
+  <body>
+    <iframe src="https://wheelofnames.com/es/kpz-yz7"></iframe>
+  </body>
+</html>
+""", height=620, scrolling=False)
 
-# Título
-st.markdown('<div class="title-container">RULETA MÁGICA MILLEX</div>', unsafe_allow_html=True)
-
-# 🎡 Ruleta embebida centrada
-st.markdown('<div class="ruleta-container">', unsafe_allow_html=True)
-components.html("""
-    <iframe class="ruleta-iframe" src="https://wheelofnames.com/es/aep-cej"></iframe>
-""", height=1000, scrolling=False)
-st.markdown('</div>', unsafe_allow_html=True)
-
-# 📋 Formulario
+# Formulario
 with st.expander("🎁 Cargar datos del ganador", expanded=False):
     with st.form("formulario", clear_on_submit=True):
-        col1, col2 = st.columns(2)
-        
-        with col1:
-            nombre = st.text_input("Nombre y apellido*")
-            razon = st.text_input("Razón social*")
-            whatsapp = st.text_input("WhatsApp (con código país)*", placeholder="+549...")
-            cliente_tipo = st.radio("¿Es cliente nuevo o actual?*", ["Nuevo", "Actual"])
-            
-        with col2:
-            tipo_cliente = st.selectbox("Tipo de cliente*", ["Pet Shop", "Veterinaria", "Distribuidora", "Otro"])
-            provincia = st.text_input("Provincia")
-            marcas = st.multiselect("Marcas que maneja", ["GiGwi", "AFP", "Beeztees", "Flexi", "Boyu", "Shanda", "Dayaing", "Haintech", "The Pets", "Otros"])
-            premio = st.selectbox("Premio ganado*", ["", "10off", "20off", "25off", "5off", "Seguí participando"])
+        nombre = st.text_input("Nombre y apellido*")
+        razon = st.text_input("Razón social*")
+        whatsapp = st.text_input("WhatsApp (con código país)*", placeholder="+549...")
+
+        cliente_tipo = st.radio("¿Es cliente nuevo o actual?*", ["Nuevo", "Actual"])
+        tipo_cliente = st.selectbox("Tipo de cliente*", ["Pet Shop", "Veterinaria", "Distribuidora", "Otro"])
+        provincia = st.text_input("Provincia")
+        ciudad = st.text_input("Ciudad")
+
+        marcas = st.multiselect("Marcas que maneja", ["GiGwi", "AFP", "Beeztees", "Flexi", "Boyu", "Shanda", "Dayaing", "Haintech", "The Pets", "Otros"])
+
+        premio = st.selectbox("Premio ganado*", ["", "10off", "20off", "25off", "5off", "Seguí participando"])
         
         enviar = st.form_submit_button("Enviar y guardar")
         
@@ -102,6 +101,7 @@ with st.expander("🎁 Cargar datos del ganador", expanded=False):
                     "clienteTipo": cliente_tipo,
                     "tipoCliente": tipo_cliente,
                     "provincia": provincia,
+                    "ciudad": ciudad,
                     "marcas": ", ".join(marcas),
                     "premio": premio
                 }
@@ -130,6 +130,7 @@ with st.expander("🎁 Cargar datos del ganador", expanded=False):
                 except requests.exceptions.RequestException as e:
                     st.error(f"❌ Error de conexión: {str(e)}")
                     st.info("Verifica tu conexión a internet o la URL del script")
+            
             else:
                 st.warning("⚠️ Por favor completa todos los campos obligatorios (*)")
 
