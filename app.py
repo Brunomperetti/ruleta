@@ -38,43 +38,34 @@ st.markdown("""
         border-radius: 8px;
         padding: 10px;
     }
-</style>
-""", unsafe_allow_html=True)
-
-st.markdown('<div class="title-container">RULETA MÁGICA MILLEX</div>', unsafe_allow_html=True)
-
-# Ruleta
-components.html("""
-<html>
-  <head>
-    <style>
-      body {
-        margin: 0;
-        overflow: hidden;
-        background: transparent;
+    .ruleta-container {
         display: flex;
         justify-content: center;
         align-items: center;
-        height: 100vh;
-      }
-      iframe {
+        height: 90vh; /* Centrado vertical */
+        background-color: #000; /* Fondo oscuro */
+    }
+    iframe {
         border: none;
-        border-radius: 12px;
-        width: 600px;
-        height: 600px;
-        box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-        overflow: hidden;
-        display: block;
-      }
-    </style>
-  </head>
-  <body>
-    <iframe src="https://wheelofnames.com/es/kpz-yz7"></iframe>
-  </body>
-</html>
-""", height=620, scrolling=False)
+        border-radius: 16px;
+        width: 800px;
+        height: 800px;
+        box-shadow: 0 8px 16px rgba(0,0,0,0.6);
+    }
+</style>
+""", unsafe_allow_html=True)
 
-# Formulario
+# Título
+st.markdown('<div class="title-container">RULETA MÁGICA MILLEX</div>', unsafe_allow_html=True)
+
+# 🎡 Ruleta embebida centrada
+st.markdown('<div class="ruleta-container">', unsafe_allow_html=True)
+components.html("""
+    <iframe src="https://wheelofnames.com/es/aep-cej"></iframe>
+""", height=850, scrolling=False)
+st.markdown('</div>', unsafe_allow_html=True)
+
+# 📋 Formulario
 with st.expander("🎁 Cargar datos del ganador", expanded=False):
     with st.form("formulario", clear_on_submit=True):
         nombre = st.text_input("Nombre y apellido*")
@@ -130,8 +121,8 @@ with st.expander("🎁 Cargar datos del ganador", expanded=False):
                 except requests.exceptions.RequestException as e:
                     st.error(f"❌ Error de conexión: {str(e)}")
                     st.info("Verifica tu conexión a internet o la URL del script")
-            
             else:
                 st.warning("⚠️ Por favor completa todos los campos obligatorios (*)")
+
 
 
