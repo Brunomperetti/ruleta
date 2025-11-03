@@ -7,9 +7,39 @@ import requests
 WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxTX0rNV7sXquRIS1Q_Pc7ZsRkiQpTHzMfHWb5ROf3muJGGBnY_J2juYEqNGJw4CC2x/exec"
 
 # Configuración de la página
-st.set_page_config(page_title="Ruleta Mágica Millex", layout="wide", initial_sidebar_state="collapsed")
+st.set_page_config(page_title="Ruleta Mágica Petsu", layout="wide", initial_sidebar_state="collapsed")
 
-# Listas de opciones
+# --- Estilos personalizados ---
+st.markdown("""
+    <style>
+        body {
+            background-color: #fff8f2;
+            font-family: 'Montserrat', sans-serif;
+        }
+        h1 {
+            color: #f57c00;
+            text-align: center;
+            font-weight: 700;
+        }
+        .stButton>button {
+            background-color: #f57c00;
+            color: white;
+            font-weight: 600;
+            border-radius: 10px;
+            padding: 0.6em 1.2em;
+        }
+        .stButton>button:hover {
+            background-color: #ff9800;
+            color: white;
+        }
+        .stExpander {
+            background-color: #fff3e0 !important;
+            border-radius: 10px !important;
+        }
+    </style>
+""", unsafe_allow_html=True)
+
+# --- Listas ---
 PROVINCIAS_ARGENTINA = [
     "Buenos Aires", "Catamarca", "Chaco", "Chubut", "Córdoba", 
     "Corrientes", "Entre Ríos", "Formosa", "Jujuy", "La Pampa", 
@@ -21,53 +51,31 @@ PROVINCIAS_ARGENTINA = [
 INTERESES = ["Perro", "Gato", "Roedores", "Aves", "Acuario"]
 
 CATEGORIAS_PRODUCTOS = [
-    "ACCESORIOS DE LIMPIEZA", "ACCESORIOS DE PELUQUERIA IMPOR", "ACCESORIOS IMPOR. P/PAJAROS -A",
-    "ACCESORIOS IMPORTADOS P/PAJARO", "ACCESORIOS PARA ROEDORES", "ACCESORIOS VARIOS ACUARIO",
-    "ACCESORIOS VARIOS P/GATOS", "ACCESORIOS VARIOS P/PERROS", "ADORNOS CON MOVIMIENTO",
-    "AIREADORES BOYU", "AIREADORES SHANDA", "ALICATE P/ PERROS Y GATOS", "ARBOLES P/GATO",
-    "BEBEDEROS PARA HAMSTER", "BEBEDEROS PARA ROEDORES", "BEBEDERO P/PERRO", "BOMBAS",
-    "BOMBAS PARA ACUARISMO", "BOZAL IMPORTADO TIPO CANASTA", "CALEFACTORES IMPORTADOS",
-    "CANILES PLEGABLES DE METAL", "CARDINAS DE MADERA", "CARDINAS DE PLASTICO",
-    "COLLARES DE AHORQUE CON PUAS", "COLLARES DE CUERO IMPORTADOS", "COLLARES DE NYLON IMPORTADOS",
-    "COLLARES ELASTIZADOS P/GATOS", "COMEDEROS ACERO INOXIDABLE", "COMEDEROS AUTOMATICOS IMPORT.",
-    "COMEDEROS DE PLASTICO IMPORTAD", "CONJUNTO ALPINISTA", "CONJUNTO NYLON HUESOS",
-    "CONJ.CORREA-COLLAR 10MM", "CONJUNTOS CORREA PRETAL", "CORREA CORTA CON RESORTE",
-    "CORREAS COLLARES PRETALES", "CORREAS DE NYLON IMPORTADOS", "CORREAS EXTENSIBLES",
-    "CUCHAS PARA PERROS", "DESCANSO Y RELAX", "DIFUSORES DE AIRE", "ELEMENTOS DE FILTRACION",
-    "EDUCATIVOS HIGIÉNICOS", "FILTRO EXTERNO BOTELLON", "FILTROS ELECT. INTERNO",
-    "FILTROS ELECTRICOS REBALSE", "FLETES VARIOS", "GRAVAS Y PIEDRAS DECORATIVAS",
-    "HERMIT CRABB ACCESORIOS", "HUESOS DE ALGODON", "JAULA COBAYOS/CONEJOS IMPORT.",
-    "JAULA PARA LOROS", "JAULAS GRANDES DORADAS", "JAULAS GRANDES PINTADAS",
-    "JAULAS MEDIANAS EPOXI IMPORT.", "JAULAS PARA GATOS", "JAULAS PARA HAMSTERS",
-    "JUGUETES BEEZTEES", "JUGUETES CHUCKIT", "JUGUETES CON SOGA", "JUGUETES DE GOMA IMPORT.",
-    "JUGUETES DE LATEX", "JUGUETES DOGZILLA", "JUGUETES GATOS CAT NIP",
-    "JUGUETES GATOS PELOTAS", "JUGUETES GATOS RATITAS", "JUGUETES GATOS VARIOS",
-    "JUGUETES JACKSON GALAXY", "JUGUETES JW", "JUGUETES PARA PERROS", "JUGUETES VINILICOS JUMBO",
-    "LITERAS IMPORTADAS", "MINERALES ABSORBENTES", "MOISES PLASTICO PARA MASCOTAS",
-    "NIDOS IMPORTADOS P/PAJAROS", "PARIDERAS", "PEINES", "PELOTA P-MASCOTAS",
-    "PECERAS DE ACRILICO", "PLANTA PLASTICA EN SOBRE", "PORTANOMBRE COLGANTE",
-    "PRETALES NYLON IMPORTADOS", "PRODAC ALIMENTOS VARIOS", "RASCADORES VARIOS",
-    "REPU. PARA AIREADORES IMPO", "REPU. PARA FILTROS IMPORTA", "REPUESTOS BOMBAS DE AGUA",
-    "REPUESTOS PARA JAULAS IMPORTAD", "RESINA IMPORTADOS", "STICKERS Y DISPLAYS",
-    "TAPA PARA TERRARIOS", "TERMOMETROS", "TRANSPORTADORAS DAYANG", "TRANSPORTADORAS MP",
-    "TUBOS DE ILUMINACION"
+    "JUGUETES PARA PERROS", "JUGUETES PARA GATOS", "CAMAS Y CUIDADO",
+    "ACCESORIOS DE PASEO", "ALIMENTACIÓN Y COMEDEROS", "ACCESORIOS VARIOS"
 ]
 
-# Título
-st.markdown('<h1 style="text-align:center;">🎯 RULETA MÁGICA MILLEX 🎯</h1>', unsafe_allow_html=True)
-
-# Ruleta centrada
+# --- Encabezado ---
+st.markdown('<h1>🎯 RULETA MÁGICA PETSU 🎯</h1>', unsafe_allow_html=True)
 st.markdown("""
-<div style="display:flex; justify-content:center; align-items:center;">
-    <iframe src="https://wheelofnames.com/es/vug-z3k" width="600" height="600" style="border:none;"></iframe>
+<p style='text-align:center; color:#333; font-size:18px;'>
+Gir&aacute; la ruleta y descubr&iacute; tu premio 🎁<br>
+Descuentos, juguetes y sorpresas para vos y tu mascota 🐶🐱
+</p>
+""", unsafe_allow_html=True)
+
+# --- Ruleta incrustada ---
+st.markdown("""
+<div style="display:flex; justify-content:center; align-items:center; margin-top:20px;">
+    <iframe src="https://wheelofnames.com/es/vug-z3k" width="600" height="600" style="border:none; border-radius:20px;"></iframe>
 </div>
 """, unsafe_allow_html=True)
 
-# Formulario
+# --- Formulario ---
 with st.expander("🎁 CARGAR DATOS DEL GANADOR", expanded=False):
     with st.form("formulario", clear_on_submit=True):
         nombre = st.text_input("Nombre y apellido")
-        razon_social = st.text_input("Razón social")
+        razon_social = st.text_input("Razón social (opcional)")
         nombre_fantasia = st.text_input("Nombre de fantasía")
         cuil_cuit = st.text_input("Número de CUIL o CUIT")
         whatsapp = st.text_input("WhatsApp (con código país)", placeholder="+549...")
@@ -77,10 +85,20 @@ with st.expander("🎁 CARGAR DATOS DEL GANADOR", expanded=False):
         provincia = st.selectbox("Provincia", PROVINCIAS_ARGENTINA)
         interes_principal = st.multiselect("Interés principal", INTERESES)
         categorias_productos = st.multiselect("Categorías de productos", CATEGORIAS_PRODUCTOS)
-        marcas = st.multiselect("Marcas que maneja", ["GiGwi", "AFP", "Beeztees", "Flexi", "Boyu", "Shanda", "Dayaing", "Haintech", "The Pets", "Otros"])
-        premio = st.selectbox("Premio ganado", ["10% de descuento", "20% de descuento", "25% de descuento", "5% de descuento", "Seguí participando"])
+        marcas = st.multiselect("Marcas que maneja", ["GiGwi", "AFP", "Beeztees", "Flexi", "Boyu", "Shanda", "Dayang", "The Pets", "Otros"])
+        
+        # Premios adaptados Petsu
+        premio = st.selectbox("Premio ganado", [
+            "5% de descuento",
+            "10% de descuento",
+            "15% de descuento",
+            "20% de descuento",
+            "25% de descuento",
+            "Juguete de regalo",
+            "Seguí participando"
+        ])
 
-        enviar = st.form_submit_button("ENVIAR Y GUARDAR DATOS")
+        enviar = st.form_submit_button("🎯 ENVIAR Y GUARDAR DATOS")
 
         if enviar:
             datos = {
@@ -96,7 +114,7 @@ with st.expander("🎁 CARGAR DATOS DEL GANADOR", expanded=False):
                 "Interés Principal": ", ".join(interes_principal),
                 "Categorías Productos": ", ".join(categorias_productos),
                 "Marcas": ", ".join(marcas),
-                "premio ganado": premio
+                "Premio ganado": premio
             }
 
             try:
@@ -107,15 +125,15 @@ with st.expander("🎁 CARGAR DATOS DEL GANADOR", expanded=False):
                 try:
                     respuesta_json = respuesta.json()
                     if respuesta_json.get("status") in ["success", "ok"]:
-                        mensaje = f"¡Felicitaciones {nombre}! 🎉 Obtuviste: *{premio}*. Presentá este mensaje para canjearlo."
+                        mensaje = f"🎉 ¡Felicitaciones {nombre}! Obtuviste: *{premio}*. Presentá este mensaje para canjearlo en Petsu."
                         whatsapp_limpio = whatsapp.strip().replace(" ", "").replace("-", "")
                         link = f"https://wa.me/{whatsapp_limpio}?text={urllib.parse.quote(mensaje)}"
-                        st.success("✅ Datos guardados correctamente!")
+                        st.success("✅ ¡Datos guardados correctamente!")
                         st.markdown(f"[📱 Abrir conversación de WhatsApp]({link})", unsafe_allow_html=True)
                     else:
                         st.error(f"❌ Error: {respuesta_json.get('message', 'Error desconocido')}")
                 except ValueError:
-                    st.error("❌ La respuesta no es JSON válido.")
+                    st.error("❌ La respuesta del servidor no es JSON válido.")
             except requests.exceptions.RequestException as e:
                 st.error(f"❌ Error de conexión: {str(e)}")
 
