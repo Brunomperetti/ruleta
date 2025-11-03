@@ -7,19 +7,21 @@ import requests
 WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxTX0rNV7sXquRIS1Q_Pc7ZsRkiQpTHzMfHWb5ROf3muJGGBnY_J2juYEqNGJw4CC2x/exec"
 
 # Configuración de la página
-st.set_page_config(page_title="Ruleta Mágica Petsu", layout="wide", initial_sidebar_state="collapsed")
+st.set_page_config(page_title="Ruleta Mágica Petsu", layout="wide")
 
-# --- Estilos personalizados ---
+# --- CSS inyectado directamente en el DOM ---
 st.markdown("""
     <style>
         body {
             background-color: #fff8f2;
-            font-family: 'Montserrat', sans-serif;
+        }
+        h1, h2, h3, label, p, div, span {
+            font-family: 'Montserrat', sans-serif !important;
         }
         h1 {
             color: #f57c00;
             text-align: center;
-            font-weight: 700;
+            font-weight: 800;
         }
         .stButton>button {
             background-color: #f57c00;
@@ -27,38 +29,22 @@ st.markdown("""
             font-weight: 600;
             border-radius: 10px;
             padding: 0.6em 1.2em;
+            border: none;
         }
         .stButton>button:hover {
             background-color: #ff9800;
-            color: white;
         }
         .stExpander {
             background-color: #fff3e0 !important;
-            border-radius: 10px !important;
+            border-radius: 12px !important;
         }
     </style>
 """, unsafe_allow_html=True)
 
-# --- Listas ---
-PROVINCIAS_ARGENTINA = [
-    "Buenos Aires", "Catamarca", "Chaco", "Chubut", "Córdoba", 
-    "Corrientes", "Entre Ríos", "Formosa", "Jujuy", "La Pampa", 
-    "La Rioja", "Mendoza", "Misiones", "Neuquén", "Río Negro", 
-    "Salta", "San Juan", "San Luis", "Santa Cruz", "Santa Fe", 
-    "Santiago del Estero", "Tierra del Fuego", "Tucumán"
-]
-
-INTERESES = ["Perro", "Gato", "Roedores", "Aves", "Acuario"]
-
-CATEGORIAS_PRODUCTOS = [
-    "JUGUETES PARA PERROS", "JUGUETES PARA GATOS", "CAMAS Y CUIDADO",
-    "ACCESORIOS DE PASEO", "ALIMENTACIÓN Y COMEDEROS", "ACCESORIOS VARIOS"
-]
-
 # --- Encabezado ---
 st.markdown('<h1>🎯 RULETA MÁGICA PETSU 🎯</h1>', unsafe_allow_html=True)
 st.markdown("""
-<p style='text-align:center; color:#333; font-size:18px;'>
+<p style='text-align:center; color:#444; font-size:18px; margin-bottom:20px;'>
 Gir&aacute; la ruleta y descubr&iacute; tu premio 🎁<br>
 Descuentos, juguetes y sorpresas para vos y tu mascota 🐶🐱
 </p>
@@ -82,12 +68,18 @@ with st.expander("🎁 CARGAR DATOS DEL GANADOR", expanded=False):
         cliente_tipo = st.radio("¿Es cliente nuevo o actual?", ["Nuevo", "Actual"])
         cliente_estrella = st.radio("¿Es cliente estrella?", ["Sí", "No"])
         tipo_cliente = st.selectbox("Tipo de cliente", ["Pet Shop", "Veterinaria", "Distribuidora", "Otro"])
-        provincia = st.selectbox("Provincia", PROVINCIAS_ARGENTINA)
-        interes_principal = st.multiselect("Interés principal", INTERESES)
-        categorias_productos = st.multiselect("Categorías de productos", CATEGORIAS_PRODUCTOS)
+        provincia = st.selectbox("Provincia", [
+            "Buenos Aires","Catamarca","Chaco","Chubut","Córdoba","Corrientes","Entre Ríos","Formosa",
+            "Jujuy","La Pampa","La Rioja","Mendoza","Misiones","Neuquén","Río Negro","Salta","San Juan",
+            "San Luis","Santa Cruz","Santa Fe","Santiago del Estero","Tierra del Fuego","Tucumán"
+        ])
+        interes_principal = st.multiselect("Interés principal", ["Perro", "Gato", "Roedores", "Aves", "Acuario"])
+        categorias_productos = st.multiselect("Categorías de productos", [
+            "JUGUETES PARA PERROS", "JUGUETES PARA GATOS", "CAMAS Y CUIDADO", 
+            "ACCESORIOS DE PASEO", "ALIMENTACIÓN Y COMEDEROS", "ACCESORIOS VARIOS"
+        ])
         marcas = st.multiselect("Marcas que maneja", ["GiGwi", "AFP", "Beeztees", "Flexi", "Boyu", "Shanda", "Dayang", "The Pets", "Otros"])
         
-        # Premios adaptados Petsu
         premio = st.selectbox("Premio ganado", [
             "5% de descuento",
             "10% de descuento",
